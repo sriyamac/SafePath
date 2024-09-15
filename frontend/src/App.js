@@ -1,24 +1,26 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'; // Import useNavigate
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom'; 
 import MapComponent from './components/MapComponent';
 import SearchBar from './components/SearchBar';
 import AboutUs from './components/AboutUs';
 import { AppBar, Toolbar, Typography, Button, IconButton, Slide, Box } from '@mui/material';
-import { Notifications, LocationOn } from '@mui/icons-material'; // Import LocationOn icon
+import { Notifications, LocationOn } from '@mui/icons-material'; 
+import { ThemeProvider } from '@mui/material/styles';
+import theme from './theme'; 
 
 function App() {
   const [location, setLocation] = useState('');
   const [showMap, setShowMap] = useState(false);
-  const [showNavbar, setShowNavbar] = useState(false); // Navigation bar visibility
+  const [showNavbar, setShowNavbar] = useState(false); //navigation visible 
   const mapRef = useRef(null);
   const searchRef = useRef(null);
-  const navigate = useNavigate(); // Initialize the useNavigate hook
+  const navigate = useNavigate(); //nav hook
 
   const handleSearch = (loc) => {
     setLocation(loc);
     setShowMap(true);
 
-    // Trigger showing the navbar during scroll
+    //to show navbar during scroll
     setTimeout(() => {
       setShowNavbar(true);
       if (mapRef.current) {
@@ -28,12 +30,12 @@ function App() {
   };
 
   const handleReturnToSearch = () => {
-    setShowNavbar(false); // Hide the navbar when returning to search
-    setShowMap(false); // Hide the map and return to the initial state
-    navigate('/'); // Navigate back to the home route
+    setShowNavbar(false); 
+    setShowMap(false); 
+    navigate('/'); 
   };
 
-  // Add a smooth scroll to the top when returning to search
+  //smooth scroll
   useEffect(() => {
     if (!showMap) {
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -41,84 +43,77 @@ function App() {
   }, [showMap]);
 
   return (
-    <div className="App">
-      {/* Conditional Navigation Bar */}
-      <Slide direction="down" in={showNavbar} mountOnEnter unmountOnExit>
-        <AppBar position="fixed">
-          <Toolbar>
-            {/* Title integrated into the navigation bar */}
-            <Typography variant="h6" style={{ flexGrow: 1 }}>
-              SafeSpot
-            </Typography>
-            {/* About Us Button linked to the About Us route */}
-            <Button color="inherit" component={Link} to="/about-us">
-              About Us
-            </Button>
-            {/* Notification Icon */}
-            <IconButton color="inherit">
-              <Notifications />
-            </IconButton>
-            {/* Return to Search Button */}
-            <Button color="inherit" onClick={handleReturnToSearch}>
-              Return to Search
-            </Button>
-          </Toolbar>
-        </AppBar>
-      </Slide>
+    <ThemeProvider theme={theme}>
+      <div className="App">
+        <Slide direction="down" in={showNavbar} mountOnEnter unmountOnExit>
+          <AppBar position="fixed">
+            <Toolbar>
+              <Typography variant="h6" style={{ flexGrow: 1 }}>
+                SafePath
+              </Typography>
+              <Button color="inherit" component={Link} to="/about-us">
+                About Us
+              </Button>
+              <IconButton color="inherit">
+                <Notifications />
+              </IconButton>
+              <Button color="inherit" onClick={handleReturnToSearch}>
+                Back
+              </Button>
+            </Toolbar>
+          </AppBar>
+        </Slide>
 
-      <Routes>
-        {/* Home Route (Main App) */}
-        <Route
-          path="/"
-          element={
-            <>
-              {!showMap && (
-                <div ref={searchRef} style={{ padding: '20px', textAlign: 'center', marginTop: '100px' }}>
-                  <Typography variant="h3" gutterBottom>
-                    SafeSpot
-                  </Typography>
-                  <SearchBar onSearch={handleSearch} />
-                </div>
-              )}
-
-              {/* Map Component */}
-              {showMap && (
-                <div ref={mapRef} style={{ marginTop: '64px' }}> {/* Add marginTop to avoid overlap with fixed navbar */}
-                  <MapComponent location={location} />
-
-                  {/* Location display in the top-left corner */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: '70px', // Adjust to move it slightly down from the top edge
-                      left: '200px', // Adjust to move it slightly right from the left edge
-                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
-                      padding: '10px 20px',
-                      borderRadius: '8px',
-                      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
-                      zIndex: 10, // Ensure it remains above other elements
-                      display: 'flex', // Flexbox to align icon and text
-                      alignItems: 'center',
-                    }}
-                  >
-                    {/* LocationOn Icon */}
-                    <LocationOn sx={{ marginRight: '8px', color: 'red' }} />
-
-                    {/* Location name */}
-                    <Typography variant="h5" color="primary">
-                      {location}
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                {!showMap && (
+                  <div ref={searchRef} style={{ padding: '20px', textAlign: 'center', marginTop: '100px' }}>
+                    <Typography variant="h3" gutterBottom>
+                      SafeSpot
                     </Typography>
-                  </Box>
-                </div>
-              )}
-            </>
-          }
-        />
+                    <SearchBar onSearch={handleSearch} />
+                  </div>
+                )}
 
-        {/* About Us Route */}
-        <Route path="/about-us" element={<AboutUs />} />
-      </Routes>
-    </div>
+                {/* Map Component */}
+                {showMap && (
+                  <div ref={mapRef} style={{ marginTop: '64px' }}> 
+                    <MapComponent location={location} />
+
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: '70px', 
+                        left: '200px', 
+                        backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                        padding: '10px 20px',
+                        borderRadius: '8px',
+                        boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                        zIndex: 10, 
+                        display: 'flex', 
+                        alignItems: 'center',
+                      }}
+                    >
+                      <LocationOn sx={{ marginRight: '8px', color: 'red' }} />
+
+                      <Typography variant="h5" color="primary">
+                        {location}
+                      </Typography>
+                    </Box>
+                  </div>
+                )}
+              </>
+            }
+          />
+
+          {/* About Us Route */}
+          <Route path="/about-us" element={<AboutUs />} />
+        </Routes>
+      </div>
+    </ThemeProvider> 
   );
 }
 
