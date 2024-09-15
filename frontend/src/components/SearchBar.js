@@ -1,24 +1,28 @@
 import React, { useState } from 'react';
+import { TextField, Button } from '@mui/material';
 
 const SearchBar = ({ onSearch }) => {
-    const [location, setLocation] = useState('');
+  const [location, setLocation] = useState('');
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        onSearch(location);
-    };
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    onSearch(location);
+  };
 
-    return (
-        <form onSubmit={handleSubmit} style={{ margin: '10px' }}>
-            <input
-                type="text"
-                placeholder="Enter a location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-            />
-            <button type="submit">Search</button>
-        </form>
-    );
+  return (
+    <form onSubmit={handleSubmit} style={{ margin: '10px', display: 'flex', justifyContent: 'center' }}>
+      <TextField
+        label="Enter a location"
+        variant="outlined"
+        value={location}
+        onChange={(e) => setLocation(e.target.value)}
+        style={{ marginRight: '10px', width: '300px' }}
+      />
+      <Button variant="contained" color="primary" type="submit">
+        Search
+      </Button>
+    </form>
+  );
 };
 
 export default SearchBar;
