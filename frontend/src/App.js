@@ -1,8 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';  // Import useNavigate
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import MapComponent from './components/MapComponent';
 import SearchBar from './components/SearchBar';
-import AboutUs from './components/AboutUs'; // Import the AboutUs component
+import AboutUs from './components/AboutUs';
 import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
 import { Notifications } from '@mui/icons-material';
 
@@ -11,13 +11,12 @@ function App() {
   const [showMap, setShowMap] = useState(false);
   const mapRef = useRef(null);
   const searchRef = useRef(null);
-  const navigate = useNavigate(); // Hook to programmatically navigate
+  const navigate = useNavigate();
 
   const handleSearch = (loc) => {
     setLocation(loc);
     setShowMap(true);
 
-    // Smooth scroll to the map section
     setTimeout(() => {
       if (mapRef.current) {
         mapRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -26,16 +25,16 @@ function App() {
   };
 
   const handleReturnToSearch = () => {
-    navigate('/'); // Navigate to the home (search) page
+    navigate('/');
   };
 
   return (
     <div className="App">
-      {/* Navigation Bar */}
+      {/* Nav Bar */}
       <AppBar position="static">
         <Toolbar>
           <img
-            src="/safepath.png" // Replace with your logo image path
+            src="/safepath.png"
             alt="Logo"
             style={{ margin: '16px', height: '30px', width: 'auto' }}
           />
