@@ -36,11 +36,10 @@ function App() {
         {/* Navigation Bar */}
         <AppBar position="static">
           <Toolbar>
-            {/* Logo */}
             <img
-              src="path_to_logo_image" // Replace with your logo image path
+              src="/safepath.png" // Replace with your logo image path
               alt="Logo"
-              style={{ marginRight: '16px', height: '40px' }}
+              style={{ margin: '16px', height: '30px', width: 'auto' }}
             />
             {/* Spacer */}
             <div style={{ flexGrow: 1 }}></div>
