@@ -1,3 +1,5 @@
+// src/components/MapComponent.js
+
 import React, { useEffect, useRef, useState } from 'react';
 import axios from 'axios';
 import loadScript from 'load-script';
@@ -74,6 +76,24 @@ const MapComponent = ({ location }) => {
   // Handle search operation
   const handleSearch = async (address) => {
     try {
+      // Clear previous intervals and markers
+      if (tornadoIntervalId) {
+        clearInterval(tornadoIntervalId);
+      }
+      if (tornadoMarker) {
+        tornadoMarker.setMap(null);
+      }
+      if (endMarker) {
+        endMarker.setMap(null);
+      }
+      if (directionsRenderer) {
+        directionsRenderer.setMap(null);
+        setDirectionsRenderer(null); // Reset the directionsRenderer
+      }
+      if (startMarker) {
+        startMarker.setMap(null);
+      }
+
       const location = await geocodeAddress(address);
       map.setCenter(location);
       map.setZoom(15);
@@ -82,9 +102,6 @@ const MapComponent = ({ location }) => {
 
       // Place start marker
       const google = window.google;
-      if (startMarker) {
-        startMarker.setMap(null);
-      }
       const marker = new google.maps.Marker({
         position: location,
         map: map,
@@ -92,56 +109,63 @@ const MapComponent = ({ location }) => {
       });
       setStartMarker(marker);
 
-      // Send coordinates to backend
-      sendStartCoordinates(location.lat(), location.lng());
+      // Simulate tornado path and generate safe zone
+      simulateTornadoPath(() => {
+        generateSafeZone();
 
-      // Generate safe zone and simulate tornado
-      generateSafeZone();
-      simulateTornadoPath();
-
-      // Update path and tornado position
-      updatePath();
-      const intervalId = setInterval(() => {
-        updateTornadoPosition();
-      }, 5000);
-      setTornadoIntervalId(intervalId);
+        // Start tornado movement
+        const intervalId = setInterval(() => {
+          updateTornadoPosition();
+        }, 200); // Move tornado every 200 ms for faster movement
+        setTornadoIntervalId(intervalId);
+      });
     } catch (error) {
       console.error(error);
     }
   };
 
-  // Send start coordinates to backend
-  const sendStartCoordinates = (lat, lng) => {
-    axios
-      .post('http://localhost:5000/api/start-coordinates', {
-        latitude: lat,
-        longitude: lng,
-      })
-      .then((response) => {
-        console.log('Backend response:', response.data);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
-  };
+  // useEffect to update path when startPoint, safeZone, or tornadoMarker change
+  useEffect(() => {
+    if (startPoint && safeZone && tornadoMarker) {
+      updatePath();
+    }
+  }, [startPoint, safeZone, tornadoMarker]);
 
-  // Generate safe zone
+  // useEffect to update path when tornado moves
+  useEffect(() => {
+    if (startPoint && safeZone && tornadoMarker) {
+      updatePath();
+    }
+  }, [tornadoIndex]);
+
+  // Generate safe zone, ensuring it is not in the tornado's path
   const generateSafeZone = () => {
     const google = window.google;
     const bounds = map.getBounds();
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
 
-    const lat = sw.lat() + Math.random() * (ne.lat() - sw.lat());
-    const lng = sw.lng() + Math.random() * (ne.lng() - sw.lng());
+    let attempts = 0;
+    let safeZoneLocation;
 
-    const safeZoneLocation = new google.maps.LatLng(lat, lng);
+    // Ensure the safe zone is not in the tornado's path
+    do {
+      const lat = sw.lat() + Math.random() * (ne.lat() - sw.lat());
+      const lng = sw.lng() + Math.random() * (ne.lng() - sw.lng());
+      safeZoneLocation = new google.maps.LatLng(lat, lng);
+
+      attempts++;
+      if (attempts > 50) {
+        console.warn(
+          'Could not find a safe zone outside the tornado path after 50 attempts'
+        );
+        break;
+      }
+    } while (isPointNearPolyline(safeZoneLocation, tornadoPath, 0.001)); // Adjust tolerance as needed
+
     setSafeZone(safeZoneLocation);
 
     // Place safe zone marker
-    if (endMarker) {
-      endMarker.setMap(null);
-    }
     const marker = new google.maps.Marker({
       position: safeZoneLocation,
       map: map,
@@ -153,26 +177,46 @@ const MapComponent = ({ location }) => {
     setEndMarker(marker);
   };
 
+  // Function to check if a point is near a polyline
+  const isPointNearPolyline = (point, polylineCoords, tolerance) => {
+    const google = window.google;
+    const polyline = new google.maps.Polyline({ path: polylineCoords });
+    const isNear = google.maps.geometry.poly.isLocationOnEdge(
+      point,
+      polyline,
+      tolerance || 10e-3
+    );
+    return isNear;
+  };
+
   // Simulate tornado path
-  const simulateTornadoPath = () => {
+  const simulateTornadoPath = (callback) => {
     const google = window.google;
     const bounds = map.getBounds();
     const ne = bounds.getNorthEast();
     const sw = bounds.getSouthWest();
 
-    const middleLat = (ne.lat() + sw.lat()) / 2;
+    // Generate a series of waypoints within the map bounds to create a more realistic path
+    const path = [];
+    const numberOfPoints = 1000; // Increase number of points for smoother movement
+    for (let i = 0; i < numberOfPoints; i++) {
+      const lat =
+        sw.lat() +
+        Math.random() * (ne.lat() - sw.lat()) +
+        (Math.sin(i / 10) * 0.001); // Add slight sine wave for realism
+      const lng =
+        sw.lng() +
+        Math.random() * (ne.lng() - sw.lng()) +
+        (Math.cos(i / 10) * 0.001);
+      path.push({ lat, lng });
+    }
 
-    const path = [
-      { lat: middleLat, lng: sw.lng() },
-      { lat: middleLat, lng: ne.lng() },
-    ];
+    // Sort waypoints to create a continuous path
+    path.sort((a, b) => a.lng - b.lng);
 
     setTornadoPath(path);
 
     // Place tornado marker
-    if (tornadoMarker) {
-      tornadoMarker.setMap(null);
-    }
     const marker = new google.maps.Marker({
       position: path[0],
       map: map,
@@ -182,22 +226,15 @@ const MapComponent = ({ location }) => {
       },
     });
     setTornadoMarker(marker);
+    setTornadoIndex(0);
 
-    // Draw tornado path
-    const tornadoPolyline = new google.maps.Polyline({
-      path: path,
-      geodesic: true,
-      strokeColor: '#FF0000',
-      strokeOpacity: 0.5,
-      strokeWeight: 2,
-    });
-    tornadoPolyline.setMap(map);
+    if (callback) callback();
   };
 
   // Update tornado position
   const updateTornadoPosition = () => {
     if (!tornadoPath || tornadoPath.length === 0) return;
-    let index = tornadoIndex + 1;
+    let index = tornadoIndex + 5; // Move 5 steps at a time for faster movement
     if (index >= tornadoPath.length) {
       index = 0;
     }
@@ -208,40 +245,18 @@ const MapComponent = ({ location }) => {
       tornadoPath[index].lng
     );
     tornadoMarker.setPosition(nextPosition);
-
-    // Send tornado coordinates to backend
-    sendTornadoCoordinates(nextPosition.lat(), nextPosition.lng());
-
-    // Update evacuation path
-    updatePath();
-  };
-
-  // Send tornado coordinates to backend
-  const sendTornadoCoordinates = (lat, lng) => {
-    axios
-      .post('http://localhost:5000/api/update-tornado', {
-        latitude: lat,
-        longitude: lng,
-      })
-      .then((response) => {
-        console.log('Backend response:', response.data);
-        const path = response.data.path;
-        drawPath(path);
-      })
-      .catch((error) => {
-        console.error('Error:', error);
-      });
   };
 
   // Update evacuation path
   const updatePath = () => {
-    if (!startPoint || !safeZone) {
+    if (!startPoint || !safeZone || !tornadoMarker) {
       return;
     }
 
     const google = window.google;
     if (directionsRenderer) {
       directionsRenderer.setMap(null);
+      setDirectionsRenderer(null); // Reset the directionsRenderer
     }
 
     const directionsService = new google.maps.DirectionsService();
@@ -254,12 +269,12 @@ const MapComponent = ({ location }) => {
     });
     setDirectionsRenderer(renderer);
 
-    // Request directions
+    // Request directions without waypoints to see if the route goes directly to the safe zone
     directionsService.route(
       {
         origin: startPoint,
         destination: safeZone,
-        travelMode: google.maps.TravelMode.WALKING,
+        travelMode: google.maps.TravelMode.DRIVING,
       },
       (response, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
@@ -269,29 +284,6 @@ const MapComponent = ({ location }) => {
         }
       }
     );
-  };
-
-  // Draw path from backend
-  const drawPath = (pathCoords) => {
-    const google = window.google;
-    const path = pathCoords.map(
-      (coord) => new google.maps.LatLng(coord.lat, coord.lng)
-    );
-
-    if (directionsRenderer) {
-      directionsRenderer.setMap(null);
-    }
-
-    const pathLine = new google.maps.Polyline({
-      path: path,
-      geodesic: true,
-      strokeColor: 'blue',
-      strokeOpacity: 1.0,
-      strokeWeight: 2,
-    });
-
-    pathLine.setMap(map);
-    setDirectionsRenderer(pathLine);
   };
 
   return (
