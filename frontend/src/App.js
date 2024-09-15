@@ -1,21 +1,26 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route, Link, useNavigate } from 'react-router-dom';
 import MapComponent from './components/MapComponent';
 import SearchBar from './components/SearchBar';
-import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
-import { Notifications } from '@mui/icons-material';
+import AboutUs from './components/AboutUs';
+import { AppBar, Toolbar, Typography, Button, IconButton, Slide, Box } from '@mui/material';
+import { Notifications } from '@mui/icons-material'; 
+import './App.css'; 
 
 function App() {
   const [location, setLocation] = useState('');
   const [showMap, setShowMap] = useState(false);
+  const [showNavbar, setShowNavbar] = useState(false);
   const mapRef = useRef(null);
   const searchRef = useRef(null);
+  const navigate = useNavigate();
 
   const handleSearch = (loc) => {
     setLocation(loc);
     setShowMap(true);
 
-    // Smooth scroll to the map section
     setTimeout(() => {
+      setShowNavbar(true);
       if (mapRef.current) {
         mapRef.current.scrollIntoView({ behavior: 'smooth' });
       }
@@ -23,53 +28,91 @@ function App() {
   };
 
   const handleReturnToSearch = () => {
-    if (searchRef.current) {
-      searchRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    setShowNavbar(false);
+    setShowMap(false);
+    navigate('/');
   };
+
+  useEffect(() => {
+    if (!showMap) {
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }, [showMap]);
 
   return (
     <div className="App">
-      {/* Navigation Bar */}
-      <AppBar position="static">
-        <Toolbar>
-          {/* Logo */}
-          <img
-            src="path_to_logo_image" // Replace with your logo image path
-            alt="Logo"
-            style={{ marginRight: '16px', height: '40px' }}
-          />
-          {/* Spacer */}
-          <div style={{ flexGrow: 1 }}></div>
-          {/* About Us Button */}
-          <Button color="inherit">About Us</Button>
-          {/* Notification Icon */}
-          <IconButton color="inherit">
-            <Notifications />
-          </IconButton>
-          {/* Return to Search Button */}
-          <Button color="inherit" onClick={handleReturnToSearch}>
-            Return to Search
-          </Button>
-        </Toolbar>
-      </AppBar>
+      <div className="animated-background"></div> 
 
-      {/* Home Screen */}
-      <div ref={searchRef} style={{ padding: '20px', textAlign: 'center' }}>
-        <Typography variant="h3" gutterBottom>
-          SafePath
-        </Typography>
-        <SearchBar onSearch={handleSearch} />
-      </div>
+      <Slide direction="down" in={showNavbar} mountOnEnter unmountOnExit>
+        <AppBar position="fixed">
+          <Toolbar>
+            <Typography variant="h6" style={{ flexGrow: 1 }}>
+              SafeSpot
+            </Typography>
+            <Button color="inherit" component={Link} to="/about-us">
+              About Us
+            </Button>
+            <IconButton color="inherit">
+              <Notifications />
+            </IconButton>
+            <Button color="inherit" onClick={handleReturnToSearch}>
+              Return to Search
+            </Button>
+          </Toolbar>
+        </AppBar>
+      </Slide>
 
-      {/* Map Component */}
-      {showMap && (
-        <div ref={mapRef}>
-          <MapComponent location={location} />
-        </div>
-      )}
+      <Routes>
+        <Route
+          path="/"
+          element={
+            <>
+              {!showMap && (
+                <div ref={searchRef} style={{ padding: '20px', textAlign: 'center', marginTop: '100px' }}>
+                  {/* Make the SafeSpot text white */}
+                  <Typography variant="h3" gutterBottom style={{ color: '#ffffff' }}>
+                    SafeSpot
+                  </Typography>
+                  <SearchBar onSearch={handleSearch} />
+                </div>
+              )}
+
+              {showMap && (
+                <div ref={mapRef} style={{ marginTop: '64px' }}>
+                  <MapComponent location={location} />
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      top: '70px',
+                      left: '200px',
+                      backgroundColor: 'rgba(255, 255, 255, 0.8)',
+                      padding: '10px 20px',
+                      borderRadius: '8px',
+                      boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
+                      zIndex: 10,
+                      display: 'flex',
+                      alignItems: 'center',
+                    }}
+                  >
+                    <Typography variant="h5" color="primary">
+                      {location}
+                    </Typography>
+                  </Box>
+                </div>
+              )}
+            </>
+          }
+        />
+        <Route path="/about-us" element={<AboutUs />} />
+      </Routes>
     </div>
   );
 }
 
-export default App;
+export default function AppWrapper() {
+  return (
+    <Router>
+      <App />
+    </Router>
+  );
+}
