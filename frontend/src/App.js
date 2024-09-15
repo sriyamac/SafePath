@@ -57,7 +57,7 @@ function App() {
       {/* Home Screen */}
       <div ref={searchRef} style={{ padding: '20px', textAlign: 'center' }}>
         <Typography variant="h3" gutterBottom>
-          SafeSpot
+          SafePath
         </Typography>
         <SearchBar onSearch={handleSearch} />
       </div>
