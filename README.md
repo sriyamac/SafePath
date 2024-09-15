@@ -4,7 +4,7 @@
 ## initial setup
 ```
 git clone https://github.com/sriyamac/SafePath.git
-cd VTHacks2024
+cd SafePath
 ```
 
 ## frontend setup
