@@ -1,14 +1,13 @@
 import React, { useState, useRef } from 'react';
-import { BrowserRouter as Router, Route, Routes, Link } from 'react-router-dom';  // Import Router components
 import MapComponent from './components/MapComponent';
 import SearchBar from './components/SearchBar';
-import AboutUs from './components/AboutUs'; // Import the AboutUs component
 import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
-import { Notifications } from '@mui/icons-material';
+import { Notifications, LocationOn } from '@mui/icons-material'; 
 
 function App() {
   const [location, setLocation] = useState('');
   const [showMap, setShowMap] = useState(false);
+  const [showNavBar, setShowNavBar] = useState(false); 
   const mapRef = useRef(null);
   const searchRef = useRef(null);
 
@@ -16,77 +15,57 @@ function App() {
     setLocation(loc);
     setShowMap(true);
 
-    // Smooth scroll to the map section
+
     setTimeout(() => {
       if (mapRef.current) {
-        mapRef.current.scrollIntoView({ behavior: 'smooth' });
+        const scrollOffset = mapRef.current.getBoundingClientRect().top + window.scrollY - 100; 
+        window.scrollTo({ top: scrollOffset, behavior: 'smooth' });
+        setShowNavBar(true); 
       }
     }, 100);
   };
 
-  const handleReturnToSearch = () => {
-    if (searchRef.current) {
-      searchRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
-    <Router> {/* Wrap the whole app inside Router */}
-      <div className="App">
-        {/* Navigation Bar */}
-        <AppBar position="static">
+    <div className="App">
+      {/* Conditionally render the Navigation Bar only after the map is shown */}
+      {showNavBar && (
+        <AppBar position="fixed" style={{ top: 0 }}>
           <Toolbar>
-            <img
-              src="/safepath.png" // Replace with your logo image path
-              alt="Logo"
-              style={{ margin: '16px', height: '30px', width: 'auto' }}
-            />
-            {/* Spacer */}
-            <div style={{ flexGrow: 1 }}></div>
-            {/* About Us Button */}
-            <Button color="inherit" component={Link} to="/about-us"> {/* Add Link to About Us */}
-              About Us
-            </Button>
-            {/* Notification Icon */}
+            <Typography variant="h6" style={{ flexGrow: 1, textAlign: 'center' }}>
+              SafePath
+            </Typography>
+            <Button color="inherit">About Us</Button>
             <IconButton color="inherit">
               <Notifications />
             </IconButton>
-            {/* Return to Search Button */}
-            <Button color="inherit" onClick={handleReturnToSearch}>
-              Return to Search
-            </Button>
           </Toolbar>
         </AppBar>
+      )}
 
-        {/* Define Routes */}
-        <Routes>
-          {/* Route for home */}
-          <Route 
-            path="/" 
-            element={
-              <>
-                {/* Home Screen */}
-                <div ref={searchRef} style={{ padding: '20px', textAlign: 'center' }}>
-                  <Typography variant="h3" gutterBottom>
-                    SafePath
-                  </Typography>
-                  <SearchBar onSearch={handleSearch} />
-                </div>
+      {/* Home Screen with Title and Search Bar */}
+      {!showMap && (
+        <div ref={searchRef} style={{ padding: '80px', textAlign: 'center', marginTop: '50px' }}>
+          <Typography variant="h3" gutterBottom>
+            SafePath
+          </Typography>
+          <SearchBar onSearch={handleSearch} value={location} />
+        </div>
+      )}
 
-                {/* Map Component */}
-                {showMap && (
-                  <div ref={mapRef}>
-                    <MapComponent location={location} />
-                  </div>
-                )}
-              </>
-            } 
-          />
-          {/* Route for About Us */}
-          <Route path="/about-us" element={<AboutUs />} /> {/* Render AboutUs component */}
-        </Routes>
-      </div>
-    </Router>
+      {/* Map Component with Search Bar */}
+      {showMap && (
+        <div ref={mapRef} style={{ marginTop: '70px' }}>
+          {/* Keep the Search Bar visible on top of the Map */}
+          <div style={{ padding: '10px', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <IconButton>
+              <LocationOn />
+            </IconButton>
+            <SearchBar onSearch={handleSearch} value={location} />
+          </div>
+          <MapComponent location={location} />
+        </div>
+      )}
+    </div>
   );
 }
 
