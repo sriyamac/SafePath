@@ -28,7 +28,7 @@ const SearchBar = ({ onSearch }) => {
         }}
         InputLabelProps={{
           style: {
-            color: '#F4C430', 
+            color: '#000000', 
           },
         }}
       />
