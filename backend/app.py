@@ -5,7 +5,6 @@ import numpy as np
 app = Flask(__name__)
 CORS(app)
 
-# Global variables to store state
 start_coords = None
 safe_zone_coords = None
 tornado_coords = None
@@ -24,16 +23,12 @@ def update_tornado():
     data = request.get_json()
     tornado_coords = (data.get('latitude'), data.get('longitude'))
     print(f'Received tornado coordinates: {tornado_coords}')
-    # Compute new path
     path = compute_path()
     return jsonify({'status': 'success', 'path': path})
 
 def compute_path():
-    # Implement A* pathfinding here
-    # For simplicity, return a dummy path
     path = [
         {'lat': start_coords[0], 'lng': start_coords[1]},
-        # ... more coordinates ...
         {'lat': safe_zone_coords[0], 'lng': safe_zone_coords[1]},
     ]
     return path
