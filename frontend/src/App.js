@@ -62,7 +62,6 @@ function App() {
         <SearchBar onSearch={handleSearch} />
       </div>
 
-      {/* Map Component */}
       {showMap && (
         <div ref={mapRef}>
           <MapComponent location={location} />
