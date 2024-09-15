@@ -16,9 +16,30 @@ const SearchBar = ({ onSearch }) => {
         variant="outlined"
         value={location}
         onChange={(e) => setLocation(e.target.value)}
-        style={{ marginRight: '10px', width: '300px' }}
+        style={{
+          backgroundColor: '#ffffff', 
+          marginRight: '10px',
+          width: '300px',
+        }}
+        InputProps={{
+          style: {
+            color: '#000', 
+          },
+        }}
+        InputLabelProps={{
+          style: {
+            color: '#F4C430', 
+          },
+        }}
       />
-      <Button variant="contained" color="primary" type="submit">
+      <Button
+        variant="contained"
+        style={{
+          backgroundColor: '#ffffff', 
+          color: '#000', 
+        }}
+        type="submit"
+      >
         Search
       </Button>
     </form>
