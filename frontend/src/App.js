@@ -4,7 +4,7 @@ import MapComponent from './components/MapComponent';
 import SearchBar from './components/SearchBar';
 import AboutUs from './components/AboutUs';
 import { AppBar, Toolbar, Typography, Button, IconButton, Slide, Box } from '@mui/material';
-import { Notifications } from '@mui/icons-material';
+import { Notifications, LocationOn } from '@mui/icons-material'; // Import LocationOn icon
 
 function App() {
   const [location, setLocation] = useState('');
@@ -90,15 +90,21 @@ function App() {
                   <Box
                     sx={{
                       position: 'absolute',
-                      top: '125px', // Adjust to move it slightly down from the top edge
-                      left: '16px', // Adjust to move it slightly right from the left edge
+                      top: '70px', // Adjust to move it slightly down from the top edge
+                      left: '200px', // Adjust to move it slightly right from the left edge
                       backgroundColor: 'rgba(255, 255, 255, 0.8)',
                       padding: '10px 20px',
                       borderRadius: '8px',
                       boxShadow: '0px 4px 12px rgba(0, 0, 0, 0.1)',
                       zIndex: 10, // Ensure it remains above other elements
+                      display: 'flex', // Flexbox to align icon and text
+                      alignItems: 'center',
                     }}
                   >
+                    {/* LocationOn Icon */}
+                    <LocationOn sx={{ marginRight: '8px', color: 'red' }} />
+
+                    {/* Location name */}
                     <Typography variant="h5" color="primary">
                       {location}
                     </Typography>
