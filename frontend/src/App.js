@@ -1,7 +1,9 @@
 import React, { useState, useRef } from 'react';
 import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Link, useNavigate } from 'react-router-dom';
 import MapComponent from './components/MapComponent';
 import SearchBar from './components/SearchBar';
+import AboutUs from './components/AboutUs';
 import AboutUs from './components/AboutUs';
 import { AppBar, Toolbar, Typography, Button, IconButton } from '@mui/material';
 import { Notifications, LocationOn } from '@mui/icons-material'; // Import the Location Icon
@@ -14,6 +16,7 @@ function App() {
   const [showNavBar, setShowNavBar] = useState(false); // State to control navbar visibility
   const mapRef = useRef(null);
   const searchRef = useRef(null);
+  const navigate = useNavigate();
   const navigate = useNavigate();
 
   const handleSearch = (loc) => {
@@ -31,6 +34,7 @@ function App() {
   };
 
   const handleReturnToSearch = () => {
+    navigate('/');
     navigate('/');
   };
 
